@@ -4,6 +4,7 @@ var questions = [
 ];
 
 var typingSpeed = 50;
+var logoutSites = null;
 
 function typeQuestion() {
   var currentQuestion = localStorage.getItem('currentQuestion');
@@ -63,15 +64,8 @@ function logoutFromAllSites() {
   xhr.onreadystatechange = function() {
     if (xhr.readyState === XMLHttpRequest.DONE) {
       if (xhr.status === 200) {
-        var config = JSON.parse(xhr.responseText);
-        var logoutSites = config.logout_sites;
-
-        // Itereer door elke site in de configuratie
-        for (var siteName in logoutSites) {
-          if (logoutSites.hasOwnProperty(siteName)) {
-            logoutFromSite(siteName);
-          }
-        }
+        logoutSites = JSON.parse(xhr.responseText).logout_sites;
+        logoutNextSite();
       } else {
         console.error('Fout bij laden van de configuratie. Statuscode: ' + xhr.status);
       }
@@ -84,28 +78,30 @@ function logoutFromAllSites() {
   xhr.send();
 }
 
-function logoutFromSite(siteName) {
-  var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === XMLHttpRequest.DONE) {
-      if (xhr.status === 200 || xhr.status === 204) {
-        document.getElementById('shell').innerHTML += "<p>" + siteName + " uitgelogd.</p>";
-      } else {
-        console.error('Fout bij uitloggen bij ' + siteName + '. Statuscode: ' + xhr.status);
-      }
-    }
-  };
-
-  var config = JSON.parse(xhr.responseText);
-  var logoutUrl = config.logout_sites[siteName];
-  
-  if (!logoutUrl) {
-    console.error('Website niet gevonden in de lijst.');
+function logoutNextSite() {
+  if (!logoutSites || Object.keys(logoutSites).length === 0) {
     return;
   }
-
-  xhr.open('GET', logoutUrl, true);
-  xhr.send();
+  
+  var siteName = Object.keys(logoutSites)[0];
+  var logoutUrl = logoutSites[siteName];
+  
+  document.getElementById('shell').innerHTML += "<p>Uitloggen bij " + siteName + "...</p>";
+  
+  // Open een nieuw tabblad om uit te loggen
+  var newTab = window.open(logoutUrl, '_blank');
+  
+  // Wacht 2 seconden en sluit het nieuwe tabblad
+  setTimeout(function() {
+    newTab.close();
+    document.getElementById('shell').innerHTML += "<p>" + siteName + " uitgelogd.</p>";
+    
+    // Verwijder de verwerkte site uit de lijst
+    delete logoutSites[siteName];
+    
+    // Ga door met uitloggen bij de volgende site
+    logoutNextSite();
+  }, 2000);
 }
 
 // Start het vraag- en uitlogproces
