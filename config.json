@@ -1,0 +1,9 @@
+{
+  "logout_sites": {
+    "AOL": "https://my.screenname.aol.com/_cqr/logout/mcLogout.psp?sitedomain=startpage.aol.com&authLev=0&lang=en&locale=us",
+    "AOL 2": "https://api.screenname.aol.com/auth/logout?state=snslogout&r=",
+    "Amazon": "https://www.amazon.com/gp/flex/sign-out.html?action=sign-out",
+    "Blogger": "https://www.blogger.com/logout.g",
+    "Delicious": "https://www.delicious.com/logout"
+  }
+}
